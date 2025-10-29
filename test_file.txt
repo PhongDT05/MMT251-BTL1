@@ -1,0 +1,17 @@
+This is a sample test file for the P2P file sharing application.
+
+You can use this file to test the publish and fetch functionality:
+
+1. Start the server
+2. Start client1 and publish this file
+3. Start client2 and fetch this file
+4. Verify that the file is transferred correctly
+
+Test content:
+- Line 1
+- Line 2
+- Line 3
+- Line 4
+- Line 5
+
+End of test file.

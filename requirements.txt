@@ -1,0 +1,12 @@
+# No external dependencies required
+# The application uses only Python standard library modules:
+# - socket
+# - threading
+# - json
+# - os
+# - shutil
+# - tkinter
+# - pathlib
+
+# For PDF reading (used during development):
+PyPDF2>=3.0.0
