@@ -178,9 +178,29 @@ class P2PClient:
             for i, peer in enumerate(peers, 1):
                 print(f"  {i}. {peer['hostname']} ({peer['ip']}:{peer['port']})")
             
-            # Try to download from first peer
-            peer = peers[0]
-            print(f"[CLIENT] Downloading from {peer['hostname']}...")
+            # Select peer to download from
+            if len(peers) == 1:
+                # Only one peer available, use it directly
+                peer = peers[0]
+                print(f"[CLIENT] Downloading from {peer['hostname']}...")
+            else:
+                # Multiple peers available, let user choose
+                while True:
+                    try:
+                        choice = input(f"[CLIENT] Choose a peer (1-{len(peers)}): ").strip()
+                        peer_index = int(choice) - 1
+                        if 0 <= peer_index < len(peers):
+                            peer = peers[peer_index]
+                            print(f"[CLIENT] Downloading from {peer['hostname']}...")
+                            break
+                        else:
+                            print(f"[ERROR] Please enter a number between 1 and {len(peers)}")
+                    except ValueError:
+                        print("[ERROR] Please enter a valid number")
+                    except KeyboardInterrupt:
+                        print("\n[CLIENT] Download cancelled")
+                        return False, "User cancelled download"
+            
             success, message = self.download_from_peer(peer, filename)
             
             if success:
