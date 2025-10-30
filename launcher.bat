@@ -35,12 +35,12 @@ goto menu
 
 :start_client
 echo.
-echo Starting client GUI...
+echo Starting client...
 echo Make sure to:
 echo   1. Use a unique hostname (e.g., client1, client2, ...)
 echo   2. Use a unique port (e.g., 6000, 6001, 6002, ...)
 echo.
-start python client_gui.py
+python client.py
 goto menu
 
 :run_tests

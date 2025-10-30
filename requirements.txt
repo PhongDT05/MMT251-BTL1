@@ -5,7 +5,6 @@
 # - json
 # - os
 # - shutil
-# - tkinter
 # - pathlib
 
 # For PDF reading (used during development):

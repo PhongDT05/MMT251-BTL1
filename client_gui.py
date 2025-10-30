@@ -1,5 +1,5 @@
 """
-P2P File Sharing - Client with GUI
+P2P File Sharing - Client with Command-Line Interface
 """
 
 import socket
@@ -7,8 +7,6 @@ import threading
 import json
 import os
 import shutil
-import tkinter as tk
-from tkinter import ttk, scrolledtext, filedialog, messagebox
 from pathlib import Path
 
 
@@ -286,15 +284,6 @@ class P2PClientGUI:
         ttk.Button(fetch_frame, text="Fetch", command=self.fetch_file).pack(side='left', padx=2)
         ttk.Button(fetch_frame, text="Refresh Repository", command=self.refresh_repository).pack(side='left', padx=2)
         
-        # Discover section
-        discover_frame = ttk.Frame(ops_frame)
-        discover_frame.pack(fill='x', pady=5)
-        
-        ttk.Label(discover_frame, text="Discover from:").pack(side='left', padx=5)
-        self.discover_entry = ttk.Entry(discover_frame, width=20)
-        self.discover_entry.pack(side='left', padx=5)
-        ttk.Button(discover_frame, text="Discover Files", command=self.discover_files).pack(side='left', padx=2)
-        
         # Repository list
         repo_frame = ttk.LabelFrame(ops_frame, text="Local Repository", padding=5)
         repo_frame.pack(fill='both', expand=True, pady=5)
@@ -304,19 +293,6 @@ class P2PClientGUI:
         self.repo_listbox.config(yscrollcommand=repo_scrollbar.set)
         self.repo_listbox.pack(side='left', fill='both', expand=True)
         repo_scrollbar.pack(side='right', fill='y')
-        
-        # Available files from other clients
-        available_frame = ttk.LabelFrame(ops_frame, text="Available Files (Double-click to Fetch)", padding=5)
-        available_frame.pack(fill='both', expand=True, pady=5)
-        
-        self.available_listbox = tk.Listbox(available_frame, height=8)
-        available_scrollbar = ttk.Scrollbar(available_frame, orient='vertical', command=self.available_listbox.yview)
-        self.available_listbox.config(yscrollcommand=available_scrollbar.set)
-        self.available_listbox.pack(side='left', fill='both', expand=True)
-        available_scrollbar.pack(side='right', fill='y')
-        
-        # Bind double-click event to fetch file
-        self.available_listbox.bind('<Double-Button-1>', self.on_file_double_click)
         
         # Log section
         log_frame = ttk.LabelFrame(self.root, text="Log", padding=5)
@@ -441,77 +417,6 @@ class P2PClientGUI:
             self.repo_listbox.insert('end', f)
             
         self.log(f"Repository refreshed: {len(files)} files")
-    
-    def discover_files(self):
-        """Discover files from another client"""
-        if not self.client:
-            messagebox.showerror("Error", "Not connected to server")
-            return
-            
-        hostname = self.discover_entry.get().strip()
-        
-        if not hostname:
-            messagebox.showerror("Error", "Please enter a hostname to discover from")
-            return
-            
-        try:
-            # Ask server for files from the specified host
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_host, server_port = self.server_entry.get().strip().split(':')
-            sock.connect((server_host, int(server_port)))
-            
-            request = {
-                'command': 'discover',
-                'hostname': hostname
-            }
-            
-            sock.send(json.dumps(request).encode('utf-8'))
-            response = json.loads(sock.recv(4096).decode('utf-8'))
-            sock.close()
-            
-            if response['status'] == 'success':
-                files = response.get('files', [])
-                
-                # Clear and populate available files list
-                self.available_listbox.delete(0, 'end')
-                
-                if files:
-                    for f in files:
-                        self.available_listbox.insert('end', f)
-                    
-                    self.log(f"Discovered {len(files)} files from {hostname}")
-                    messagebox.showinfo("Success", f"Found {len(files)} files on {hostname}\nDouble-click a file to fetch it")
-                else:
-                    self.log(f"No files found on {hostname}")
-                    messagebox.showinfo("Info", f"No files found on {hostname}")
-            else:
-                self.log(f"Discovery failed: {response.get('message')}")
-                messagebox.showerror("Error", f"Failed to discover: {response.get('message')}")
-                
-        except Exception as e:
-            self.log(f"Discovery error: {e}")
-            messagebox.showerror("Error", f"Failed to discover files: {e}")
-    
-    def on_file_double_click(self, event):
-        """Handle double-click on available file to fetch it"""
-        selection = self.available_listbox.curselection()
-        
-        if not selection:
-            return
-            
-        filename = self.available_listbox.get(selection[0])
-        
-        # Fetch the file
-        self.log(f"Fetching: {filename}")
-        success, message = self.client.fetch(filename)
-        
-        if success:
-            self.log(f"Fetched successfully: {message}")
-            self.refresh_repository()
-            messagebox.showinfo("Success", f"File '{filename}' fetched successfully!")
-        else:
-            self.log(f"Fetch failed: {message}")
-            messagebox.showerror("Error", f"Failed to fetch: {message}")
 
 
 def main():
